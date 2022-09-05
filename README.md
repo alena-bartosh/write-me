@@ -39,3 +39,7 @@ options:
 required arguments:
   -p , --pathdir   dir with exported messages in .html
 ```
+
+### Code conduction
+
+* Use [Gitmoji](https://gitmoji.dev/) for commit messages
