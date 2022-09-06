@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
 
 import argparse
-import glob
 import logging
 from pathlib import Path
 
 import coloredlogs
 import pandas as pd
 
+from files_provider import FilesProvider
 from html_telegram_messages_parser import HtmlTelegramMessagesParser
-
-MESSAGES_MASK = "messages*.html"
-DESTINATION_DIR = "dest"
 
 
 def main() -> None:
@@ -34,26 +31,21 @@ def main() -> None:
     coloredlogs.install(log_level_map[args.log_level])
     logger = logging.getLogger("[write-me]")
 
-    logger.debug('Try to find .html file from chat export ...')
-    dir_path = Path(args.pathdir)
-
-    if not dir_path.is_dir():
-        raise ValueError(f'Path [{dir_path}] does not exist or it is not a dir!')
-
-    file_paths = glob.glob(str(dir_path / MESSAGES_MASK))
-    files_count = len(file_paths)
-
-    if files_count == 0:
-        logger.error(f'Path [{dir_path}] does not contain any files with messages!')
-        return
-
-    logger.debug(f'There are {files_count} files for parsing.')
+    files_provider = FilesProvider(Path(args.pathdir), logger)
+    file_paths = files_provider.get_all_raw_file_paths()
 
     messages: pd.DataFrame = HtmlTelegramMessagesParser.parse(file_paths)
-    logger.info(f'Successfully parsed [{messages.shape[0]}] messages.')
+    message_count: int = messages.shape[0]
+    logger.info(f'Successfully parsed [{message_count}] messages.')
+
+    # NOTE: Do this check here because we can have some non-empty files,
+    #       but count of parsed messages still be zero because of their types
+    #       (supported or not supported by out system).
+    if message_count == 0:
+        return
 
     senders: list[str] = messages.name.unique()
-    dest_file_path: str = f'{DESTINATION_DIR}/messages_' + '_'.join(senders) + '.tsv'
+    dest_file_path: Path = files_provider.get_dest_file_path(senders)
     messages.to_csv(dest_file_path, sep='\t', index=False)
     logger.info(f'Save result to [{dest_file_path}].')
 

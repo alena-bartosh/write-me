@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 class HtmlTelegramMessagesParser:
 
     @staticmethod
-    def parse(file_paths: list[str]) -> pd.DataFrame:
+    def parse(file_paths: list[Path]) -> pd.DataFrame:
         """
         Parse only text messages. Skip pictures, audio, forwarded etc.
         Return data with the next cols: [date, name, text]
@@ -15,7 +15,7 @@ class HtmlTelegramMessagesParser:
         all_messages: list[dict] = []
 
         for message_file in file_paths:
-            parsed_html = BeautifulSoup(Path(message_file).open('r').read(), features='html.parser')
+            parsed_html = BeautifulSoup(message_file.open('r').read(), features='html.parser')
 
             part_messages: list[dict] = []
             last_date: str | None = None
