@@ -9,6 +9,7 @@ import pandas as pd
 
 from files_provider import FilesProvider
 from html_telegram_messages_parser import HtmlTelegramMessagesParser
+from message_stats_dash_server import MessageStatsDashServer
 
 
 def main() -> None:
@@ -48,6 +49,12 @@ def main() -> None:
     dest_file_path: Path = files_provider.get_dest_file_path(senders)
     messages.to_csv(dest_file_path, sep='\t', index=False)
     logger.info(f'Save result to [{dest_file_path}].')
+
+    try:
+        server = MessageStatsDashServer(logger, messages)
+        server.run()
+    except Exception:
+        logger.exception('Could not start Message Stats Server!')
 
 
 if __name__ == '__main__':
