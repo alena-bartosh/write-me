@@ -88,7 +88,7 @@ class MessagesManipulator:
 
     def get_popular_words(self, n: int) -> pd.DataFrame:
         """
-        Return DataFrame like
+        Return DataFrame with sorted words frequency like
 
           |user | word    | count
         --------------------------
@@ -96,6 +96,7 @@ class MessagesManipulator:
         1 |A    | tea     | 15
         3 |T    | whiskey | 42
         4 |T    | beer    | 1
+        (here n=2)
         """
         popular_words = self.flatten_messages.groupby(['user'])['clean_words'] \
             .agg(count='value_counts') \
