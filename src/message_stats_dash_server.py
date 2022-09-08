@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from enum import Enum
 from random import choice, randint
 
@@ -76,10 +77,19 @@ class MessageStatsDashServer:
 
     def __get_layout(self) -> html.Div:
         """Get layout loading spinner & stats output"""
+        words_frequency_text = [
+            html.H3(f'{user} чаще всего использует слова [{", ".join(row.word.tolist())}].') for user, row in
+            self.messages_manipulator.get_popular_words(10).groupby(['user'])
+        ]
+
+        min_date = datetime.strftime(self.messages_manipulator.prepared_messages.date.min(), "%Y-%m-%d")
+        max_date = datetime.strftime(self.messages_manipulator.prepared_messages.date.max(), "%Y-%m-%d")
+
         return html.Div(
             [
-                html.H3('I have no idea why this page is empty'),
-                # TODO: Show first day of data and last day
+                html.H3(f'Первое сообщение    - {min_date}'),
+                html.H3(f'Последнее сообщение - {max_date}'),
+                html.Div(words_frequency_text),
 
                 html.Div(children=[
                     html.H3(children='Message count'),
