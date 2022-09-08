@@ -10,6 +10,7 @@ import pandas as pd
 from files_provider import FilesProvider
 from html_telegram_messages_parser import HtmlTelegramMessagesParser
 from message_stats_dash_server import MessageStatsDashServer
+from messages_manipulator import MessagesManipulator
 
 
 def main() -> None:
@@ -51,7 +52,8 @@ def main() -> None:
     logger.info(f'Save result to [{dest_file_path}].')
 
     try:
-        server = MessageStatsDashServer(logger, messages)
+        messages_manipulator = MessagesManipulator(messages)
+        server = MessageStatsDashServer(logger, messages_manipulator)
         server.run()
     except Exception:
         logger.exception('Could not start Message Stats Server!')

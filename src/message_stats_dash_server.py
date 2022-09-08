@@ -5,6 +5,9 @@ from random import choice
 import pandas as pd
 import plotly.express as px
 from dash import Dash, dcc, html
+from dash import dash_table
+
+from messages_manipulator import MessagesManipulator
 
 COLORS_SEQUENTIALS = [
     px.colors.sequential.Viridis,
@@ -19,14 +22,10 @@ class ElementId(Enum):
 
 
 class MessageStatsDashServer:
-    class ColumnName(Enum):
-        DATE = 'date'
-        TEXT = 'text'
-        NAME = 'name'
 
     def __init__(self,
                  logger: logging.Logger,
-                 messages: pd.DataFrame) -> None:
+                 messages_manipulator: MessagesManipulator) -> None:
         # TODO: Add some assets files if needed
         self.app = Dash(__name__, assets_folder='./assets')
 
@@ -34,12 +33,12 @@ class MessageStatsDashServer:
         logging.getLogger('parse').setLevel(logging.WARNING)
         self.app.logger = logger
 
-        self.messages = messages
+        self.messages_manipulator = messages_manipulator
 
         self.host = 'localhost'
         self.port = 3838
 
-        self.app.title = '[write-me] Stats'
+        self.app.title = 'Write-me'
         self.colors = choice(COLORS_SEQUENTIALS)
         self.app.layout = self.__get_layout()
 
