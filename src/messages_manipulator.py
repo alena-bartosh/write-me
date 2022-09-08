@@ -143,6 +143,11 @@ class MessagesManipulator:
             .agg(messages_in_avg_per_day='mean') \
             .reset_index()
 
+    def get_total_per_active_day(self) -> pd.DataFrame:
+        return self.prepared_messages.groupby(['user', 'date'])['message'] \
+            .agg(messages_count='count') \
+            .reset_index()
+
     def get_mean_per_active_month(self) -> pd.DataFrame:
         return self.prepared_messages.groupby(['user', 'month', 'year'])['message'] \
             .agg(messages_count='count') \
@@ -158,3 +163,12 @@ class MessagesManipulator:
             .groupby(['user'])['messages_count'] \
             .agg(messages_in_avg_per_year='mean') \
             .reset_index()
+
+    def get_active_months_per_active_year(self, n: int) -> pd.DataFrame:
+        return self.prepared_messages.groupby(['user', 'month', 'year'])['message'] \
+            .agg(messages_count='count') \
+            .reset_index() \
+            .sort_values(['messages_count'], ascending=False) \
+            .groupby(['user', 'year']) \
+            .head(n) \
+            .reset_index(drop=True)
