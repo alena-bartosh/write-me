@@ -1,6 +1,6 @@
 import logging
 from enum import Enum
-from random import choice
+from random import choice, randint
 
 import pandas as pd
 import plotly.express as px
@@ -42,17 +42,69 @@ class MessageStatsDashServer:
         self.colors = choice(COLORS_SEQUENTIALS)
         self.app.layout = self.__get_layout()
 
+    @staticmethod
+    def __generate_table(df: pd.DataFrame,
+                         columns: list[dict[str, str]],
+                         max_rows: int = 25) -> dash_table.DataTable:
+        return dash_table.DataTable(
+            id=f'datatable-interactivity-{randint(0, 42)}',
+            data=df.to_dict('records'),
+            columns=columns,
+            filter_action='native',
+            sort_action='native',
+            page_size=max_rows,
+            # style
+            style_header={
+                'fontWeight': 'bold',
+                'backgroundColor': 'rgb(230, 230, 230)',
+                'border': '1px solid black'
+            },
+            style_cell={
+                'padding': '5px',
+                'textAlign': 'left',
+                'border': '1px solid grey'
+            },
+            style_data_conditional=[
+                {
+                    'if': {'row_index': 'odd'},
+                    'backgroundColor': 'rgb(248, 248, 248)'
+                }
+            ],
+            fixed_rows={'headers': True},
+            style_table={"height": "85vh", "maxHeight": "85vh"},
+        )
+
     def __get_layout(self) -> html.Div:
         """Get layout loading spinner & stats output"""
         return html.Div(
             [
                 html.H3('I have no idea why this page is empty'),
+                # TODO: Show first day of data and last day
+
+                html.Div(children=[
+                    html.H3(children='Message count'),
+                    self.__generate_table(
+                        df=self.messages_manipulator.get_message_count(),
+                        columns=[
+                            {
+                                'name': 'USER',
+                                'id': 'user',
+                                'type': 'text'
+                            },
+                            {
+                                'name': 'COUNT',
+                                'id': 'count',
+                                'type': 'numeric'
+                            },
+                        ]),
+                ]),
                 dcc.Loading(
                     [html.Div(id=ElementId.STATS_OUTPUT.value)],
                     type='circle',
                     color=choice(self.colors)
                 ),
             ],
+            # TODO: For now have unexpected errors https://github.com/plotly/dash/issues/1775
             style=dict(display='flex', flexDirection='column', alignItems='center'),
         )
 
