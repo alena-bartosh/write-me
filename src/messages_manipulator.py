@@ -48,18 +48,18 @@ class MessagesManipulator:
         Transform prepared messages DataFrame A based on clean words column and return B.
 
         A)
-          date|time|user|message                 |clean_words
+          |date|time|user|message                 |clean_words
         ------------------------------------------------------------
-        0 d   |t   |A   | want you a coffee?     |['want', 'coffee']
-        1 d+1 |t+1 |T   | no, I drink whiskey.   |['drink', 'whiskey']
+        0 |d   |t   |A   | want you a coffee?     |['want', 'coffee']
+        1 |d+1 |t+1 |T   | no, I drink whiskey.   |['drink', 'whiskey']
 
         B)
-          date|time|user|message                 |clean_words
+          |date|time|user|message                 |clean_words
         ------------------------------------------------------------
-        0 d   |t   |A   | want you a coffee?     | want
-        0 d   |t   |A   | want you a coffee?     | coffee
-        1 d+1 |t+1 |T   | no, I drink whiskey.   | drink
-        1 d+1 |t+1 |T   | no, I drink whiskey.   | whiskey
+        0 |d   |t   |A   | want you a coffee?     | want
+        0 |d   |t   |A   | want you a coffee?     | coffee
+        1 |d+1 |t+1 |T   | no, I drink whiskey.   | drink
+        1 |d+1 |t+1 |T   | no, I drink whiskey.   | whiskey
         """
         flatten_clean_words = pd.DataFrame(
             [[i, x] for i, y in self.prepared_messages['clean_words'].iteritems() for x in y],
@@ -85,3 +85,24 @@ class MessagesManipulator:
         self.raw_messages['datetime'] = pd.to_datetime(raw_messages['date'], dayfirst=True)
         self.prepared_messages = self.__prepare_messages()
         self.flatten_messages = self.__get_flatten_messages()
+
+    def get_popular_words(self, n: int) -> pd.DataFrame:
+        """
+        Return DataFrame like
+
+          |user | word    | count
+        --------------------------
+        0 |A    | coffee  | 37
+        1 |A    | tea     | 15
+        3 |T    | whiskey | 42
+        4 |T    | beer    | 1
+        """
+        popular_words = self.flatten_messages.groupby(['user'])['clean_words'] \
+            .agg(count='value_counts') \
+            .reset_index() \
+            .groupby(['user']) \
+            .head(n) \
+            .reset_index(drop=True) \
+            .rename(columns={'clean_words': 'word'})
+
+        return popular_words
