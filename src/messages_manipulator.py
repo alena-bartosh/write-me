@@ -107,3 +107,21 @@ class MessagesManipulator:
             .rename(columns={'clean_words': 'word'})
 
         return popular_words
+
+    def get_message_count(self) -> pd.DataFrame:
+        return self.prepared_messages.groupby('user')['message'] \
+            .agg(count='count') \
+            .reset_index()
+
+    def get_mean_message_len(self) -> pd.DataFrame:
+        """
+        Since use a cleaned DataFrame as input,
+        shows how many informative words in average in message
+        """
+
+        return self.flatten_messages.groupby(['index', 'user'])['clean_words'] \
+            .agg(words_count='count') \
+            .reset_index() \
+            .groupby(['user'])['words_count'] \
+            .agg(words_in_avg_by_message='mean') \
+            .reset_index()
