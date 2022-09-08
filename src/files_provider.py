@@ -21,7 +21,10 @@ class FilesProvider:
             raise ValueError(f'Path [{self.__raw_data_dir}] does not exist or it is not a dir!')
 
     def get_dest_file_path(self, additional_info: list[str]) -> Path:
-        return Path(f'{self.__DESTINATION_DIR}/messages_' + '_'.join(additional_info) + '.tsv')
+        file_name = f'{self.__DESTINATION_DIR}/messages_' + '_'.join(additional_info)
+        truncated_file_name = (file_name[:100] + '..') if len(file_name) > 100 else file_name
+        
+        return Path(truncated_file_name + '.tsv')
 
     def get_all_raw_file_paths(self) -> list[Path]:
         file_paths = [Path(file_path) for file_path in
