@@ -37,7 +37,7 @@ class MessagesManipulator:
         prepared_messages['user'] = self.raw_messages['name']
 
         # Remove punctuations, make in lowercase, use stemmer
-        prepared_messages['message'] = prepared_messages['text'].str.replace('[^\w\s]', ' ').str.lower()
+        prepared_messages['message'] = self.raw_messages['text'].str.replace('[^\w\s]', ' ').str.lower()
         prepared_messages['words'] = prepared_messages.message.str.split(' ')
         prepared_messages['clean_words'] = prepared_messages.words.apply(self.__clean_up_words)
 
