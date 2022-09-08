@@ -32,8 +32,13 @@ class MessagesManipulator:
 
     def __prepare_messages(self) -> pd.DataFrame:
         prepared_messages = pd.DataFrame()
+
         prepared_messages['date'] = self.raw_messages['datetime'].dt.date
         prepared_messages['time'] = self.raw_messages['datetime'].dt.time
+        prepared_messages['date'] = pd.to_datetime(prepared_messages['date'])
+        prepared_messages['month'] = prepared_messages['date'].dt.month
+        prepared_messages['year'] = prepared_messages['date'].dt.year
+
         prepared_messages['user'] = self.raw_messages['name']
 
         # Remove punctuations, make in lowercase, use stemmer
@@ -124,4 +129,32 @@ class MessagesManipulator:
             .reset_index() \
             .groupby(['user'])['words_count'] \
             .agg(words_in_avg_by_message='mean') \
+            .reset_index()
+
+    # NOTE: In the functions below, we calculated values only for days/months/years when there were messages.
+    #       If users send messages only 2 month from 12, then mean value will be (message_count / 2).
+    #       So the resulting data may be speculative.
+
+    def get_mean_per_active_day(self) -> pd.DataFrame:
+        return self.prepared_messages.groupby(['user', 'date'])['message'] \
+            .agg(messages_count='count') \
+            .reset_index() \
+            .groupby(['user'])['messages_count'] \
+            .agg(messages_in_avg_per_day='mean') \
+            .reset_index()
+
+    def get_mean_per_active_month(self) -> pd.DataFrame:
+        return self.prepared_messages.groupby(['user', 'month', 'year'])['message'] \
+            .agg(messages_count='count') \
+            .reset_index() \
+            .groupby(['user', 'year'])['messages_count'] \
+            .agg(messages_in_avg_per_month='mean') \
+            .reset_index()
+
+    def get_mean_per_active_year(self) -> pd.DataFrame:
+        return self.prepared_messages.groupby(['user', 'year'])['message'] \
+            .agg(messages_count='count') \
+            .reset_index() \
+            .groupby(['user'])['messages_count'] \
+            .agg(messages_in_avg_per_year='mean') \
             .reset_index()
