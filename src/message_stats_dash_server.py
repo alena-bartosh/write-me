@@ -46,9 +46,9 @@ class MessageStatsDashServer:
     @staticmethod
     def __generate_table(df: pd.DataFrame,
                          columns: list[dict[str, str]],
-                         max_rows: int = 25) -> dash_table.DataTable:
+                         max_rows: int = 4) -> dash_table.DataTable:
         return dash_table.DataTable(
-            id=f'datatable-interactivity-{randint(0, 42)}',
+            id=f'datatable-interactivity-{randint(1, 1042)}',
             data=df.to_dict('records'),
             columns=columns,
             filter_action='native',
@@ -61,9 +61,9 @@ class MessageStatsDashServer:
                 'border': '1px solid black'
             },
             style_cell={
-                'padding': '5px',
                 'textAlign': 'left',
-                'border': '1px solid grey'
+                'border': '1px solid grey',
+                'width': '45%',
             },
             style_data_conditional=[
                 {
@@ -72,7 +72,10 @@ class MessageStatsDashServer:
                 }
             ],
             fixed_rows={'headers': True},
-            style_table={"height": "85vh", "maxHeight": "85vh"},
+            style_table={
+                'margin-left': '3vh',
+                'width': '80%'
+            },
         )
 
     def __get_layout(self) -> html.Div:
@@ -115,7 +118,7 @@ class MessageStatsDashServer:
                 ),
             ],
             # TODO: For now have unexpected errors https://github.com/plotly/dash/issues/1775
-            style=dict(display='flex', flexDirection='column', alignItems='center'),
+            # style=dict(display='flex', flexDirection='column', alignItems='center'),
         )
 
     def run(self) -> None:
