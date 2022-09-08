@@ -78,6 +78,22 @@ class MessageStatsDashServer:
             },
         )
 
+    @staticmethod
+    def __get_columns(is_default: bool = True, additional: list[dict] = []) -> list[dict]:
+        default_cols = [
+            {
+                'name': 'ЮЗЕР',
+                'id': 'user',
+                'type': 'text'
+            },
+            {
+                'name': 'КОЛИЧЕСТВО',
+                'id': 'count',
+                'type': 'numeric'
+            },
+        ]
+        return additional + default_cols if is_default else additional
+
     def __get_layout(self) -> html.Div:
         """Get layout loading spinner & stats output"""
         words_frequency_text = [
@@ -94,22 +110,45 @@ class MessageStatsDashServer:
                 html.H3(f'Последнее сообщение - {max_date}'),
                 html.Div(words_frequency_text),
 
-                html.Div(children=[
-                    html.H3(children='Message count'),
-                    self.__generate_table(
-                        df=self.messages_manipulator.get_message_count(),
-                        columns=[
-                            {
-                                'name': 'USER',
-                                'id': 'user',
-                                'type': 'text'
-                            },
-                            {
-                                'name': 'COUNT',
-                                'id': 'count',
-                                'type': 'numeric'
-                            },
-                        ]),
+                html.Div([
+                    html.Div(children=[
+                        html.H3(children='Всего сообщений'),
+                        self.__generate_table(
+                            df=self.messages_manipulator.get_message_count(),
+                            columns=self.__get_columns())],
+                    ),
+                    # style={'display': 'inline-block'}),
+                    html.Div(children=[
+                        html.H3(children='В среднем за активный день'),
+                        self.__generate_table(
+                            df=self.messages_manipulator.get_mean_per_active_day(),
+                            columns=self.__get_columns())],
+                    ),
+                    # style={'display': 'inline-block'}),
+                    html.Div(children=[
+                        html.H3(children='В среднем за год'),
+                        self.__generate_table(
+                            df=self.messages_manipulator.get_mean_per_active_year(),
+                            columns=self.__get_columns())],
+                    ),
+                    html.Div(children=[
+                        html.H3(children='В среднем за активный месяц'),
+                        self.__generate_table(
+                            df=self.messages_manipulator.get_mean_per_active_month(),
+                            columns=self.__get_columns(additional=[
+                                {
+                                    'name': 'ГОД',
+                                    'id': 'year',
+                                    'type': 'numeric'
+                                },
+                            ]))],
+                    ),
+                    html.Div(children=[
+                        html.H3(children='В среднем информативных слов'),
+                        self.__generate_table(
+                            df=self.messages_manipulator.get_mean_message_len(),
+                            columns=self.__get_columns())],
+                    ),
                 ]),
                 dcc.Loading(
                     [html.Div(id=ElementId.STATS_OUTPUT.value)],

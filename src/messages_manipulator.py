@@ -1,4 +1,5 @@
 import nltk
+import numpy as np
 import pandas as pd
 from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
@@ -124,24 +125,30 @@ class MessagesManipulator:
         shows how many informative words in average in message
         """
 
-        return self.flatten_messages.groupby(['index', 'user'])['clean_words'] \
+        res = self.flatten_messages.groupby(['index', 'user'])['clean_words'] \
             .agg(words_count='count') \
             .reset_index() \
             .groupby(['user'])['words_count'] \
             .agg(words_in_avg_by_message='mean') \
             .reset_index()
+        res['count'] = res.words_in_avg_by_message.apply(np.ceil)  # round to upper
+
+        return res
 
     # NOTE: In the functions below, we calculated values only for days/months/years when there were messages.
-    #       If users send messages only 2 month from 12, then mean value will be (message_count / 2).
+    #       If users send messages only 2 months from 12, then mean value will be (message_count / 2).
     #       So the resulting data may be speculative.
 
     def get_mean_per_active_day(self) -> pd.DataFrame:
-        return self.prepared_messages.groupby(['user', 'date'])['message'] \
+        res = self.prepared_messages.groupby(['user', 'date'])['message'] \
             .agg(messages_count='count') \
             .reset_index() \
             .groupby(['user'])['messages_count'] \
             .agg(messages_in_avg_per_day='mean') \
             .reset_index()
+        res['count'] = res.messages_in_avg_per_day.apply(np.ceil)  # round to upper
+
+        return res
 
     def get_total_per_active_day(self) -> pd.DataFrame:
         return self.prepared_messages.groupby(['user', 'date'])['message'] \
@@ -149,20 +156,26 @@ class MessagesManipulator:
             .reset_index()
 
     def get_mean_per_active_month(self) -> pd.DataFrame:
-        return self.prepared_messages.groupby(['user', 'month', 'year'])['message'] \
+        res = self.prepared_messages.groupby(['user', 'month', 'year'])['message'] \
             .agg(messages_count='count') \
             .reset_index() \
             .groupby(['user', 'year'])['messages_count'] \
             .agg(messages_in_avg_per_month='mean') \
             .reset_index()
+        res['count'] = res.messages_in_avg_per_month.apply(np.ceil)  # round to upper
+
+        return res
 
     def get_mean_per_active_year(self) -> pd.DataFrame:
-        return self.prepared_messages.groupby(['user', 'year'])['message'] \
+        res = self.prepared_messages.groupby(['user', 'year'])['message'] \
             .agg(messages_count='count') \
             .reset_index() \
             .groupby(['user'])['messages_count'] \
             .agg(messages_in_avg_per_year='mean') \
             .reset_index()
+        res['count'] = res.messages_in_avg_per_year.apply(np.ceil)  # round to upper
+
+        return res
 
     def get_active_months_per_active_year(self, n: int) -> pd.DataFrame:
         return self.prepared_messages.groupby(['user', 'month', 'year'])['message'] \
